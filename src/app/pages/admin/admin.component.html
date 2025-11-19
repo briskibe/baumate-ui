@@ -1,0 +1,539 @@
+<div class="container mx-auto p-6">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Administration</h1>
+      <p class="mt-2 text-sm text-gray-600">Manage your organization's resources</p>
+    </div>
+
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-blue-800">Admin Panel</h3>
+        <div class="mt-2 text-sm text-blue-700">
+          <p>Manage workers, materials, sites, and clients for your organization.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center py-12">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <p class="mt-2 text-sm text-gray-600">Loading data...</p>
+      </div>
+    </div>
+  } @else if (error()) {
+    <div class="rounded-lg bg-red-50 p-4">
+      <p class="text-sm text-red-800">{{ error() }}</p>
+    </div>
+  } @else {
+    <!-- Tabs -->
+    <div class="border-b border-gray-200">
+      <nav class="-mb-px flex space-x-8">
+        <button (click)="setActiveTab('workers')" [class.border-blue-500]="activeTab() === 'workers'" [class.text-blue-600]="activeTab() === 'workers'" [class.border-transparent]="activeTab() !== 'workers'" [class.text-gray-500]="activeTab() !== 'workers'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Workers ({{ workers().length }})</button>
+        <button (click)="setActiveTab('materials')" [class.border-blue-500]="activeTab() === 'materials'" [class.text-blue-600]="activeTab() === 'materials'" [class.border-transparent]="activeTab() !== 'materials'" [class.text-gray-500]="activeTab() !== 'materials'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Materials ({{ materials().length }})</button>
+        <button (click)="setActiveTab('sites')" [class.border-blue-500]="activeTab() === 'sites'" [class.text-blue-600]="activeTab() === 'sites'" [class.border-transparent]="activeTab() !== 'sites'" [class.text-gray-500]="activeTab() !== 'sites'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Sites ({{ sites().length }})</button>
+        <button (click)="setActiveTab('clients')" [class.border-blue-500]="activeTab() === 'clients'" [class.text-blue-600]="activeTab() === 'clients'" [class.border-transparent]="activeTab() !== 'clients'" [class.text-gray-500]="activeTab() !== 'clients'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Clients ({{ clients().length }})</button>
+      </nav>
+    </div>
+
+    <!-- Workers Tab -->
+    @if (activeTab() === 'workers') {
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900">Workers</h2>
+            <p class="mt-1 text-sm text-gray-600">Manage workers and grant app access</p>
+          </div>
+          <button hlmBtn variant="default" size="sm" (click)="openAddWorkerDialog()">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Worker
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          @if (workers().length === 0) {
+            <div class="px-6 py-12 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No workers</h3>
+              <p class="mt-1 text-sm text-gray-500">Get started by adding a worker.</p>
+            </div>
+          } @else {
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Access</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @for (worker of workers(); track worker.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="text-sm font-medium text-gray-900">{{ worker.name }}</div>
+                        @if (isAdminWorker()(worker.id)) {
+                          <svg class="ml-2 h-4 w-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" title="Organization Admin - Cannot be deleted">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                          </svg>
+                        }
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ worker.email || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ worker.phone || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      @if (hasAppAccess()(worker.id)) {
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Has Access</span>
+                      } @else {
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">No Access</span>
+                      }
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      @if (!hasAppAccess()(worker.id) && worker.email) {
+                        <button hlmBtn variant="ghost" size="sm" (click)="giveAppAccess(worker)" class="text-blue-600">Give Access</button>
+                      }
+                      <button hlmBtn variant="ghost" size="sm" (click)="openEditWorkerDialog(worker)">Edit</button>
+                      @if (isAdminWorker()(worker.id)) {
+                        <button hlmBtn variant="ghost" size="sm" disabled class="text-gray-400 cursor-not-allowed" title="Organization admin worker cannot be deleted">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                          </svg>
+                        </button>
+                      } @else {
+                        <button hlmBtn variant="ghost" size="sm" (click)="confirmDeleteWorker(worker)" class="text-red-600">Delete</button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Materials Tab -->
+    @if (activeTab() === 'materials') {
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900">Materials</h2>
+            <p class="mt-1 text-sm text-gray-600">Manage organization-level material catalog</p>
+          </div>
+          <button hlmBtn variant="default" size="sm" (click)="openAddMaterialDialog()">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Material
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          @if (materials().length === 0) {
+            <div class="px-6 py-12 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No materials</h3>
+              <p class="mt-1 text-sm text-gray-500">Get started by adding a material to your catalog.</p>
+            </div>
+          } @else {
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @for (material of materials(); track material.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ material.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ material.unit }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">{{ material.description || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <button hlmBtn variant="ghost" size="sm" (click)="openEditMaterialDialog(material)">Edit</button>
+                      <button hlmBtn variant="ghost" size="sm" (click)="confirmDeleteMaterial(material)" class="text-red-600">Delete</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Sites Tab -->
+    @if (activeTab() === 'sites') {
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900">Sites</h2>
+            <p class="mt-1 text-sm text-gray-600">Manage construction sites and project managers</p>
+          </div>
+          <button hlmBtn variant="default" size="sm" (click)="openAddSiteDialog()">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Site
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          @if (sites().length === 0) {
+            <div class="px-6 py-12 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No sites</h3>
+              <p class="mt-1 text-sm text-gray-500">Get started by adding a construction site.</p>
+            </div>
+          } @else {
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project Manager</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Workers</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @for (site of sites(); track site.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ site.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ getClientName()(site.clientId) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full"
+                        [class.bg-blue-100]="site.status === 'planning'"
+                        [class.text-blue-800]="site.status === 'planning'"
+                        [class.bg-green-100]="site.status === 'active'"
+                        [class.text-green-800]="site.status === 'active'"
+                        [class.bg-yellow-100]="site.status === 'on_hold'"
+                        [class.text-yellow-800]="site.status === 'on_hold'"
+                        [class.bg-gray-100]="site.status === 'completed'"
+                        [class.text-gray-800]="site.status === 'completed'">
+                        {{ site.status || 'planning' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ getSiteManagerName()(site.id) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ getWorkerCount()(site.id) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <button hlmBtn variant="ghost" size="sm" (click)="viewSiteDetails(site.id)" class="text-blue-600">View</button>
+                      <button hlmBtn variant="ghost" size="sm" (click)="openEditSiteDialog(site)">Edit</button>
+                      <button hlmBtn variant="ghost" size="sm" (click)="confirmDeleteSite(site)" class="text-red-600">Delete</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Clients Tab -->
+    @if (activeTab() === 'clients') {
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900">Clients</h2>
+            <p class="mt-1 text-sm text-gray-600">Manage client information</p>
+          </div>
+          <button hlmBtn variant="default" size="sm" (click)="openAddClientDialog()">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Client
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          @if (clients().length === 0) {
+            <div class="px-6 py-12 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No clients</h3>
+              <p class="mt-1 text-sm text-gray-500">Get started by adding a client.</p>
+            </div>
+          } @else {
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @for (client of clients(); track client.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ client.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ client.company || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ client.email || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ client.phone || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <button hlmBtn variant="ghost" size="sm" (click)="openEditClientDialog(client)">Edit</button>
+                      <button hlmBtn variant="ghost" size="sm" (click)="confirmDeleteClient(client)" class="text-red-600">Delete</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    }
+  }
+
+  <!-- Worker Dialog -->
+  @if (showWorkerDialog()) {
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">{{ editingWorker() ? 'Edit Worker' : 'Add Worker' }}</h3>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <input type="text" [(ngModel)]="workerForm().name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Worker name" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" [(ngModel)]="workerForm().email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="worker@example.com" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <input type="tel" [(ngModel)]="workerForm().phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="+1234567890" />
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button hlmBtn variant="outline" size="sm" (click)="closeWorkerDialog()">Cancel</button>
+          <button hlmBtn variant="default" size="sm" (click)="submitWorker()">{{ editingWorker() ? 'Update' : 'Create' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Worker Delete Confirmation -->
+  @if (showDeleteWorkerConfirm()) {
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Delete Worker</h3>
+        </div>
+        <div class="px-6 py-4">
+          <p class="text-sm text-gray-700">Are you sure you want to delete <strong>{{ workerToDelete()?.name }}</strong>? This action cannot be undone.</p>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button hlmBtn variant="outline" size="sm" (click)="cancelDeleteWorker()">Cancel</button>
+          <button hlmBtn variant="default" size="sm" (click)="deleteWorker()" class="bg-red-600 hover:bg-red-700">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Material Dialog -->
+  @if (showMaterialDialog()) {
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">{{ editingMaterial() ? 'Edit Material' : 'Add Material' }}</h3>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <input type="text" [(ngModel)]="materialForm().name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Concrete" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Unit *</label>
+            <input type="text" [(ngModel)]="materialForm().unit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., m³, kg, pieces" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea [(ngModel)]="materialForm().description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Optional description"></textarea>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button hlmBtn variant="outline" size="sm" (click)="closeMaterialDialog()">Cancel</button>
+          <button hlmBtn variant="default" size="sm" (click)="submitMaterial()">{{ editingMaterial() ? 'Update' : 'Create' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Material Delete Confirmation -->
+  @if (showDeleteMaterialConfirm()) {
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Delete Material</h3>
+        </div>
+        <div class="px-6 py-4">
+          <p class="text-sm text-gray-700">Are you sure you want to delete <strong>{{ materialToDelete()?.name }}</strong>? This action cannot be undone.</p>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button hlmBtn variant="outline" size="sm" (click)="cancelDeleteMaterial()">Cancel</button>
+          <button hlmBtn variant="default" size="sm" (click)="deleteMaterial()" class="bg-red-600 hover:bg-red-700">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Site Dialog -->
+  @if (showSiteDialog()) {
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">{{ editingSite() ? 'Edit Site' : 'Add Site' }}</h3>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+              <input type="text" [(ngModel)]="siteForm().name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Site name" />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+              <input type="text" [(ngModel)]="siteForm().address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Street address" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+              <input type="text" [(ngModel)]="siteForm().city" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="City" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select [(ngModel)]="siteForm().status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="planning">Planning</option>
+                <option value="active">Active</option>
+                <option value="on_hold">On Hold</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Client</label>
+              <select [(ngModel)]="siteForm().clientId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">None</option>
+                @for (client of clients(); track client.id) {
+                  <option [value]="client.id">{{ client.name }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Project Manager</label>
+              <select [(ngModel)]="siteForm().projectManagerId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">None</option>
+                @for (worker of workers(); track worker.id) {
+                  <option [value]="worker.id">{{ worker.name }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <input type="date" [(ngModel)]="siteForm().startDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <input type="date" [(ngModel)]="siteForm().endDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button hlmBtn variant="outline" size="sm" (click)="closeSiteDialog()">Cancel</button>
+          <button hlmBtn variant="default" size="sm" (click)="submitSite()">{{ editingSite() ? 'Update' : 'Create' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Site Delete Confirmation -->
+  @if (showDeleteSiteConfirm()) {
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Delete Site</h3>
+        </div>
+        <div class="px-6 py-4">
+          <p class="text-sm text-gray-700">Are you sure you want to delete <strong>{{ siteToDelete()?.name }}</strong>? This action cannot be undone.</p>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button hlmBtn variant="outline" size="sm" (click)="cancelDeleteSite()">Cancel</button>
+          <button hlmBtn variant="default" size="sm" (click)="deleteSite()" class="bg-red-600 hover:bg-red-700">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Client Dialog -->
+  @if (showClientDialog()) {
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">{{ editingClient() ? 'Edit Client' : 'Add Client' }}</h3>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <input type="text" [(ngModel)]="clientForm().name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Client name" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+            <input type="text" [(ngModel)]="clientForm().company" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Company name" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" [(ngModel)]="clientForm().email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="client@example.com" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <input type="tel" [(ngModel)]="clientForm().phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="+1234567890" />
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button hlmBtn variant="outline" size="sm" (click)="closeClientDialog()">Cancel</button>
+          <button hlmBtn variant="default" size="sm" (click)="submitClient()">{{ editingClient() ? 'Update' : 'Create' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Client Delete Confirmation -->
+  @if (showDeleteClientConfirm()) {
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Delete Client</h3>
+        </div>
+        <div class="px-6 py-4">
+          <p class="text-sm text-gray-700">Are you sure you want to delete <strong>{{ clientToDelete()?.name }}</strong>? This action cannot be undone.</p>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <button hlmBtn variant="outline" size="sm" (click)="cancelDeleteClient()">Cancel</button>
+          <button hlmBtn variant="default" size="sm" (click)="deleteClient()" class="bg-red-600 hover:bg-red-700">Delete</button>
+        </div>
+      </div>
+    </div>
+  }
+  </div>
+</div>

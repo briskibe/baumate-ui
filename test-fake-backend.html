@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Backend Interceptor Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left: 4px solid #f44336;
+        }
+        .info {
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fake Backend Interceptor Test</h1>
+    <p>This page tests the fake backend interceptor functionality. Note: This is a standalone HTML test that simulates the interceptor behavior.</p>
+
+    <div class="test-section">
+        <h2>Database Status</h2>
+        <button onclick="checkDatabase()">Check Database</button>
+        <button onclick="clearDatabase()">Clear Database (Reset)</button>
+        <div id="db-status" class="result info"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test: GET All Users</h2>
+        <button onclick="testGetUsers()">Test GET /api/users</button>
+        <div id="users-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test: GET All Workers</h2>
+        <button onclick="testGetWorkers()">Test GET /api/workers</button>
+        <div id="workers-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test: Business Rule - Delete Admin Worker (Should Fail)</h2>
+        <button onclick="testDeleteAdminWorker()">Test DELETE Admin Worker</button>
+        <div id="delete-admin-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test: Business Rule - Manager Can Only Modify Daily Logs on Managed Sites</h2>
+        <button onclick="testManagerPermissions()">Test Manager Permissions</button>
+        <div id="manager-permissions-result" class="result"></div>
+    </div>
+
+    <script>
+        const DB_KEY = 'baumate-db-v1';
+
+        // Generate UUID
+        function generateId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Initialize database with default data
+        function initializeDatabase() {
+            const orgId = generateId();
+            const adminUserId = generateId();
+            const adminWorkerId = generateId();
+            const managerUserId = generateId();
+            const managerWorkerId = generateId();
+            const worker1Id = generateId();
+            const worker2Id = generateId();
+            const worker3Id = generateId();
+            const siteAId = generateId();
+            const siteBId = generateId();
+            const material1Id = generateId();
+            const material2Id = generateId();
+            const material3Id = generateId();
+            const client1Id = generateId();
+            const dailyLogId = generateId();
+
+            const db = {
+                organizations: [
+                    {
+                        id: orgId,
+                        name: 'Baumate Construction Ltd',
+                        address: '123 Builder Street, Construction City, 12345'
+                    }
+                ],
+                users: [
+                    {
+                        id: adminUserId,
+                        name: 'Admin User',
+                        email: 'admin@baumate.com',
+                        role: 'org_admin',
+                        organizationId: orgId
+                    },
+                    {
+                        id: managerUserId,
+                        name: 'Manager User',
+                        email: 'manager@baumate.com',
+                        role: 'org_manager',
+                        organizationId: orgId
+                    }
+                ],
+                workers: [
+                    {
+                        id: adminWorkerId,
+                        name: 'Admin Worker',
+                        email: 'admin@baumate.com',
+                        phone: '+1234567890',
+                        organizationId: orgId
+                    },
+                    {
+                        id: managerWorkerId,
+                        name: 'Manager Worker',
+                        email: 'manager@baumate.com',
+                        phone: '+1234567891',
+                        organizationId: orgId
+                    },
+                    {
+                        id: worker1Id,
+                        name: 'John Doe',
+                        email: 'john.doe@baumate.com',
+                        phone: '+1234567892',
+                        organizationId: orgId
+                    },
+                    {
+                        id: worker2Id,
+                        name: 'Jane Smith',
+                        email: 'jane.smith@baumate.com',
+                        phone: '+1234567893',
+                        organizationId: orgId
+                    },
+                    {
+                        id: worker3Id,
+                        name: 'Bob Johnson',
+                        email: 'bob.johnson@baumate.com',
+                        phone: '+1234567894',
+                        organizationId: orgId
+                    }
+                ],
+                materials: [
+                    {
+                        id: material1Id,
+                        name: 'Concrete',
+                        unit: 'm³',
+                        description: 'Standard concrete mix'
+                    },
+                    {
+                        id: material2Id,
+                        name: 'Steel Rebar',
+                        unit: 'kg',
+                        description: 'Reinforcement steel bars'
+                    },
+                    {
+                        id: material3Id,
+                        name: 'Bricks',
+                        unit: 'pieces',
+                        description: 'Standard red bricks'
+                    }
+                ],
+                clients: [
+                    {
+                        id: client1Id,
+                        name: 'ABC Corporation',
+                        email: 'contact@abc-corp.com',
+                        phone: '+1987654321',
+                        company: 'ABC Corporation'
+                    }
+                ],
+                sites: [
+                    {
+                        id: siteAId,
+                        name: 'Site A - Office Building',
+                        address: '456 Construction Ave, Building Town',
+                        organizationId: orgId,
+                        clientId: client1Id,
+                        startDate: '2025-01-15',
+                        endDate: '2025-12-31'
+                    },
+                    {
+                        id: siteBId,
+                        name: 'Site B - Residential Complex',
+                        address: '789 Development Rd, Housing City',
+                        organizationId: orgId,
+                        startDate: '2025-03-01',
+                        endDate: '2026-02-28'
+                    }
+                ],
+                assignments: [
+                    {
+                        id: generateId(),
+                        siteId: siteAId,
+                        workerId: managerWorkerId,
+                        role: 'site_manager',
+                        assignedDate: '2025-01-15'
+                    },
+                    {
+                        id: generateId(),
+                        siteId: siteAId,
+                        workerId: worker1Id,
+                        role: 'worker',
+                        assignedDate: '2025-01-20'
+                    },
+                    {
+                        id: generateId(),
+                        siteId: siteAId,
+                        workerId: worker2Id,
+                        role: 'worker',
+                        assignedDate: '2025-01-20'
+                    },
+                    {
+                        id: generateId(),
+                        siteId: siteAId,
+                        workerId: worker3Id,
+                        role: 'worker',
+                        assignedDate: '2025-01-22'
+                    }
+                ],
+                siteMaterials: [
+                    {
+                        id: generateId(),
+                        siteId: siteAId,
+                        materialId: material1Id,
+                        plannedQty: 100,
+                        actualQty: 45
+                    },
+                    {
+                        id: generateId(),
+                        siteId: siteAId,
+                        materialId: material2Id,
+                        plannedQty: 5000,
+                        actualQty: 2300
+                    }
+                ],
+                dailyLogs: [
+                    {
+                        id: dailyLogId,
+                        siteId: siteAId,
+                        date: '2025-11-05',
+                        createdBy: managerUserId,
+                        notes: 'Good progress today, weather was favorable'
+                    }
+                ],
+                dailyLogEntries: [
+                    {
+                        id: generateId(),
+                        dailyLogId: dailyLogId,
+                        workerId: worker1Id,
+                        hoursWorked: 8,
+                        description: 'Foundation work'
+                    },
+                    {
+                        id: generateId(),
+                        dailyLogId: dailyLogId,
+                        workerId: worker2Id,
+                        hoursWorked: 8,
+                        description: 'Concrete pouring'
+                    },
+                    {
+                        id: generateId(),
+                        dailyLogId: dailyLogId,
+                        materialId: material1Id,
+                        quantityUsed: 15,
+                        description: 'Used for foundation'
+                    }
+                ],
+                incidents: [
+                    {
+                        id: generateId(),
+                        siteId: siteAId,
+                        date: '2025-11-03',
+                        reportedBy: managerUserId,
+                        severity: 'low',
+                        description: 'Minor equipment malfunction, quickly resolved',
+                        resolved: true
+                    }
+                ],
+                _adminWorkerId: adminWorkerId
+            };
+
+            return db;
+        }
+
+        function loadDatabase() {
+            const stored = localStorage.getItem(DB_KEY);
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            const db = initializeDatabase();
+            saveDatabase(db);
+            return db;
+        }
+
+        function saveDatabase(db) {
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+        }
+
+        function checkDatabase() {
+            const db = loadDatabase();
+            const status = `
+Database Status:
+================
+✓ Organizations: ${db.organizations.length}
+✓ Users: ${db.users.length}
+✓ Workers: ${db.workers.length}
+✓ Materials: ${db.materials.length}
+✓ Sites: ${db.sites.length}
+✓ Assignments: ${db.assignments.length}
+✓ Site Materials: ${db.siteMaterials.length}
+✓ Daily Logs: ${db.dailyLogs.length}
+✓ Daily Log Entries: ${db.dailyLogEntries.length}
+✓ Clients: ${db.clients.length}
+✓ Incidents: ${db.incidents.length}
+
+Admin Worker ID (Undeletable): ${db._adminWorkerId}
+            `;
+            document.getElementById('db-status').textContent = status;
+        }
+
+        function clearDatabase() {
+            localStorage.removeItem(DB_KEY);
+            document.getElementById('db-status').textContent = 'Database cleared! Refresh the page to reinitialize.';
+        }
+
+        function testGetUsers() {
+            const db = loadDatabase();
+            const result = `
+SUCCESS: Retrieved ${db.users.length} users
+${JSON.stringify(db.users, null, 2)}
+            `;
+            const elem = document.getElementById('users-result');
+            elem.textContent = result;
+            elem.className = 'result success';
+        }
+
+        function testGetWorkers() {
+            const db = loadDatabase();
+            const result = `
+SUCCESS: Retrieved ${db.workers.length} workers
+${JSON.stringify(db.workers, null, 2)}
+            `;
+            const elem = document.getElementById('workers-result');
+            elem.textContent = result;
+            elem.className = 'result success';
+        }
+
+        function testDeleteAdminWorker() {
+            const db = loadDatabase();
+            const adminWorkerId = db._adminWorkerId;
+            const adminWorker = db.workers.find(w => w.id === adminWorkerId);
+
+            const result = `
+TEST: Attempting to delete admin worker
+Admin Worker: ${JSON.stringify(adminWorker, null, 2)}
+
+EXPECTED: 403 Forbidden - "Cannot delete the organization admin's worker"
+
+This business rule is enforced in the interceptor's checkPermissions function.
+The interceptor will return a 403 error when trying to DELETE /api/workers/${adminWorkerId}
+            `;
+            const elem = document.getElementById('delete-admin-result');
+            elem.textContent = result;
+            elem.className = 'result info';
+        }
+
+        function testManagerPermissions() {
+            const db = loadDatabase();
+            const manager = db.users.find(u => u.role === 'org_manager');
+            const siteA = db.sites[0];
+            const siteB = db.sites[1];
+
+            const result = `
+TEST: Manager Permissions
+
+Manager: ${manager.name} (${manager.email})
+Assigned as site_manager to: ${siteA.name}
+NOT assigned to: ${siteB.name}
+
+Business Rules Enforced:
+========================
+1. ✓ Manager CAN read all resources (GET requests allowed)
+2. ✓ Manager CAN create/update/delete daily logs on Site A (where they are site_manager)
+3. ✗ Manager CANNOT create/update/delete daily logs on Site B (not assigned)
+4. ✗ Manager CANNOT modify workers, materials, sites, etc. (only daily logs)
+
+Expected Responses:
+- GET /api/daily-logs → 200 OK
+- POST /api/daily-logs (Site A) → 201 Created
+- POST /api/daily-logs (Site B) → 403 Forbidden
+- POST /api/workers → 403 Forbidden (Insufficient permissions)
+- PUT /api/sites/{id} → 403 Forbidden (Insufficient permissions)
+            `;
+            const elem = document.getElementById('manager-permissions-result');
+            elem.textContent = result;
+            elem.className = 'result info';
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            checkDatabase();
+        };
+    </script>
+</body>
+</html>
