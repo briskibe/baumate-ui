@@ -153,6 +153,7 @@
     } @else if (site()) {
       <!-- Overview Tab -->
       @if (activeTab() === 'overview') {
+        <app-site-overview-tab>
         <div class="space-y-4">
           <!-- Site Information Card -->
           <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -431,10 +432,12 @@
             </div>
           </div>
         </div>
+        </app-site-overview-tab>
       }
 
       <!-- Workers Tab -->
       @if (activeTab() === 'workers') {
+        <app-site-workers-tab>
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
             <h2 class="text-xl font-semibold text-gray-900">Workers</h2>
@@ -482,10 +485,12 @@
             }
           </div>
         </div>
+        </app-site-workers-tab>
       }
 
       <!-- Materials Tab -->
       @if (activeTab() === 'materials') {
+        <app-site-materials-tab>
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
             <div>
@@ -545,10 +550,12 @@
             }
           </div>
         </div>
+        </app-site-materials-tab>
       }
 
       <!-- Assignments Tab -->
       @if (activeTab() === 'assignments') {
+        <app-site-assignments-tab>
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
             <div>
@@ -632,10 +639,12 @@
             }
           </div>
         </div>
+        </app-site-assignments-tab>
       }
 
       <!-- Daily Log Tab -->
       @if (activeTab() === 'dailyLog') {
+        <app-site-daily-log-tab>
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div class="px-6 py-5 border-b border-gray-200">
             <div class="flex items-center justify-between mb-4">
@@ -800,6 +809,7 @@
             }
           </div>
         </div>
+        </app-site-daily-log-tab>
       }
     }
   </div>
