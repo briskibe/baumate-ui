@@ -81,6 +81,29 @@ export class SiteDetailComponent implements OnInit {
     return canEditDailyLog(currentUser, currentSite, currentAssignments);
   });
 
+  // Only allow site managers (org_manager) to edit/create on today's date; admins/org_admins can edit any date
+  isSelectedDateToday = computed(() => {
+    const selected = this.selectedDate();
+    if (!selected) return false;
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${y}-${m}-${d}`;
+    return selected === todayStr;
+  });
+
+  canEditDailyLogForSelectedDate = computed(() => {
+    const user = this.user();
+    if (!this.canEditDailyLogTab()) return false;
+    if (!user) return false;
+    if (user.role === 'org_manager') {
+      return this.isSelectedDateToday();
+    }
+    // admin and org_admin keep full access
+    return true;
+  });
+
   isSiteManagerFlag = computed(() => {
     const currentUser = this.user();
     const currentSite = this.site();
@@ -736,6 +759,14 @@ export class SiteDetailComponent implements OnInit {
     const currentUser = this.user();
     if (!currentSite || !currentUser) return;
 
+    // Enforce: site managers can only create logs for today's date
+    if (!this.canEditDailyLogForSelectedDate()) {
+      toast.error('Action not allowed', {
+        description: 'You can only create a daily log for today.'
+      });
+      return;
+    }
+
     const newLog: DailyLog = {
       id: this.generateId(),
       siteId: currentSite.id,
@@ -764,6 +795,12 @@ export class SiteDetailComponent implements OnInit {
   }
 
   openAddEntryDialog() {
+    if (!this.canEditDailyLogForSelectedDate()) {
+      toast.error('Action not allowed', {
+        description: 'You can only add entries to today\'s log.'
+      });
+      return;
+    }
     this.entryForm.set({
       workerId: '',
       startTime: '08:00',
@@ -840,6 +877,12 @@ export class SiteDetailComponent implements OnInit {
   }
 
   submitAddEntry() {
+    if (!this.canEditDailyLogForSelectedDate()) {
+      toast.error('Action not allowed', {
+        description: 'You can only add entries to today\'s log.'
+      });
+      return;
+    }
     const validationError = this.validateEntry();
     if (validationError) {
       this.dailyLogError.set(validationError);
@@ -882,6 +925,12 @@ export class SiteDetailComponent implements OnInit {
   }
 
   openEditEntryDialog(entry: DailyLogEntry) {
+    if (!this.canEditDailyLogForSelectedDate()) {
+      toast.error('Action not allowed', {
+        description: 'You can only edit entries on today\'s log.'
+      });
+      return;
+    }
     this.entryToEdit.set(entry);
     this.entryForm.set({
       workerId: entry.workerId,
@@ -901,6 +950,12 @@ export class SiteDetailComponent implements OnInit {
   }
 
   submitEditEntry() {
+    if (!this.canEditDailyLogForSelectedDate()) {
+      toast.error('Action not allowed', {
+        description: 'You can only edit entries on today\'s log.'
+      });
+      return;
+    }
     const validationError = this.validateEntry();
     if (validationError) {
       this.dailyLogError.set(validationError);
@@ -946,6 +1001,12 @@ export class SiteDetailComponent implements OnInit {
   }
 
   openDeleteEntryDialog(entry: DailyLogEntry) {
+    if (!this.canEditDailyLogForSelectedDate()) {
+      toast.error('Action not allowed', {
+        description: 'You can only delete entries from today\'s log.'
+      });
+      return;
+    }
     this.entryToDelete.set(entry);
     this.dailyLogError.set('');
     this.showDeleteEntryDialog.set(true);
@@ -957,6 +1018,12 @@ export class SiteDetailComponent implements OnInit {
   }
 
   confirmDeleteEntry() {
+    if (!this.canEditDailyLogForSelectedDate()) {
+      toast.error('Action not allowed', {
+        description: 'You can only delete entries from today\'s log.'
+      });
+      return;
+    }
     const entry = this.entryToDelete();
     if (!entry) return;
 
