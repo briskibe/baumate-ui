@@ -164,14 +164,9 @@
                   [projectManager]="projectManager()"
                   [clients]="clients()"
                   [formatStatus]="formatStatus.bind(this)"
-                  [enterEditMode]="enterEditMode.bind(this)"
-                  [updateSiteName]="updateSiteName.bind(this)"
-                  [updateSiteAddress]="updateSiteAddress.bind(this)"
-                  [updateSiteCity]="updateSiteCity.bind(this)"
-                  [updateSiteStatus]="updateSiteStatus.bind(this)"
-                  [updateSiteClient]="updateSiteClient.bind(this)"
-                  [updateSiteStartDate]="updateSiteStartDate.bind(this)"
-                  [updateSiteEndDate]="updateSiteEndDate.bind(this)"
+                  (enterEditModeRequested)="enterEditMode()"
+                  (saveRequested)="onOverviewSave($event)"
+                  (cancelEditRequested)="cancelEditMode()"
                 >
         <div class="space-y-4">
           <!-- Site Information Card -->

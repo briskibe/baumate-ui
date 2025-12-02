@@ -1056,6 +1056,11 @@ export class SiteDetailComponent implements OnInit {
     });
   }
 
+  onOverviewSave(updated: any) {
+    this.siteForm.set({ ...this.siteForm(), ...updated });
+    this.saveSiteChanges();
+  }
+
   // Helper to generate UUID (matching the backend pattern)
   private generateId(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {

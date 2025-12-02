@@ -1,11 +1,12 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 
 @Component({
   selector: 'app-site-overview-tab',
   standalone: true,
-  imports: [CommonModule, HlmButtonImports],
+  imports: [CommonModule, FormsModule, HlmButtonImports],
   template: `
     <div class="space-y-4">
       <!-- Site Information Card -->
@@ -13,12 +14,27 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
         <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
           <h3 class="text-base font-semibold text-gray-900">Site Information</h3>
           @if (canEdit && !isEditMode) {
-            <button hlmBtn variant="ghost" size="sm" (click)="enterEditMode?.()">
+            <button hlmBtn variant="ghost" size="sm" (click)="enterEditModeRequested.emit()">
               <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               Edit
             </button>
+          } @else if (canEdit && isEditMode) {
+            <div class="space-x-2">
+              <button hlmBtn variant="default" size="sm" (click)="onSave()">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Save
+              </button>
+              <button hlmBtn variant="outline" size="sm" (click)="onCancel()">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancel
+              </button>
+            </div>
           }
         </div>
         <div class="px-4 py-4">
@@ -69,8 +85,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
                 </label>
                 <input
                   type="text"
-                  [value]="siteForm?.name"
-                  (input)="updateSiteName?.($any($event.target).value)"
+                  [(ngModel)]="draft.name"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter site name"
                 />
@@ -80,8 +95,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
                   Status <span class="text-red-500">*</span>
                 </label>
                 <select
-                  [value]="siteForm?.status"
-                  (change)="updateSiteStatus?.($any($event.target).value)"
+                  [(ngModel)]="draft.status"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="planning">Planning</option>
@@ -96,8 +110,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
                 </label>
                 <input
                   type="text"
-                  [value]="siteForm?.address"
-                  (input)="updateSiteAddress?.($any($event.target).value)"
+                  [(ngModel)]="draft.address"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter address"
                 />
@@ -108,8 +121,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
                 </label>
                 <input
                   type="text"
-                  [value]="siteForm?.city"
-                  (input)="updateSiteCity?.($any($event.target).value)"
+                  [(ngModel)]="draft.city"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter city"
                 />
@@ -124,7 +136,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
         <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
           <h3 class="text-base font-semibold text-gray-900">Client & Management</h3>
           @if (canEdit && !isEditMode) {
-            <button hlmBtn variant="ghost" size="sm" (click)="enterEditMode?.()">
+            <button hlmBtn variant="ghost" size="sm" (click)="enterEditModeRequested.emit()">
               <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
@@ -202,8 +214,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
                   Client
                 </label>
                 <select
-                  [value]="siteForm?.clientId"
-                  (change)="updateSiteClient?.($any($event.target).value)"
+                  [(ngModel)]="draft.clientId"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">-- No client --</option>
@@ -218,8 +229,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
                 </label>
                 <input
                   type="date"
-                  [value]="siteForm?.startDate"
-                  (input)="updateSiteStartDate?.($any($event.target).value)"
+                  [(ngModel)]="draft.startDate"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -229,8 +239,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
                 </label>
                 <input
                   type="date"
-                  [value]="siteForm?.endDate"
-                  (input)="updateSiteEndDate?.($any($event.target).value)"
+                  [(ngModel)]="draft.endDate"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -242,7 +251,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
     </div>
   `
 })
-export class SiteOverviewTabComponent {
+export class SiteOverviewTabComponent implements OnChanges {
   @Input() canEdit = false;
   @Input() isEditMode = false;
   @Input() site: any = null;
@@ -254,13 +263,43 @@ export class SiteOverviewTabComponent {
 
   @Input() formatStatus: ((status: string) => string) | null = null;
 
-  // Actions as function inputs
-  @Input() enterEditMode: (() => void) | null = null;
-  @Input() updateSiteName: ((name: string) => void) | null = null;
-  @Input() updateSiteAddress: ((address: string) => void) | null = null;
-  @Input() updateSiteCity: ((city: string) => void) | null = null;
-  @Input() updateSiteStatus: ((status: string) => void) | null = null;
-  @Input() updateSiteClient: ((clientId: string) => void) | null = null;
-  @Input() updateSiteStartDate: ((date: string) => void) | null = null;
-  @Input() updateSiteEndDate: ((date: string) => void) | null = null;
+  // Actions via outputs
+  @Output() enterEditModeRequested = new EventEmitter<void>();
+  @Output() saveRequested = new EventEmitter<any>();
+  @Output() cancelEditRequested = new EventEmitter<void>();
+
+  // Local draft for edit mode
+  draft: any = {
+    name: '',
+    address: '',
+    city: '',
+    status: 'planning',
+    startDate: '',
+    endDate: '',
+    clientId: ''
+  };
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Whenever entering edit mode or siteForm changes, sync draft
+    if (changes['siteForm'] || changes['isEditMode']) {
+      const form = this.siteForm || this.site || {};
+      this.draft = {
+        name: form.name || '',
+        address: form.address || '',
+        city: form.city || '',
+        status: form.status || 'planning',
+        startDate: form.startDate || '',
+        endDate: form.endDate || '',
+        clientId: form.clientId || ''
+      };
+    }
+  }
+
+  onSave() {
+    this.saveRequested.emit({ ...this.draft });
+  }
+
+  onCancel() {
+    this.cancelEditRequested.emit();
+  }
 }
