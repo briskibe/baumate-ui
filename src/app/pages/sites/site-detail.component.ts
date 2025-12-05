@@ -27,13 +27,18 @@ import { UsersService } from '../../core/users.service';
 import { forkJoin } from 'rxjs';
 import { toast } from 'ngx-sonner';
 import { TranslocoModule } from '@jsverse/transloco';
+import { SiteOverviewTabComponent } from './tabs/overview-tab.component';
+import { SiteWorkersTabComponent } from './tabs/workers-tab.component';
+import { SiteMaterialsTabComponent } from './tabs/materials-tab.component';
+import { SiteAssignmentsTabComponent } from './tabs/assignments-tab.component';
+import { SiteDailyLogTabComponent } from './tabs/daily-log-tab.component';
 
 type TabType = 'overview' | 'workers' | 'materials' | 'assignments' | 'dailyLog';
 
 @Component({
   selector: 'app-site-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, HlmButtonImports, TranslocoModule],
+  imports: [CommonModule, RouterModule, FormsModule, HlmButtonImports, TranslocoModule, SiteOverviewTabComponent, SiteWorkersTabComponent, SiteMaterialsTabComponent, SiteAssignmentsTabComponent, SiteDailyLogTabComponent],
   templateUrl: './site-detail.component.html',
   styleUrl: './site-detail.component.css'
 })
@@ -1049,6 +1054,11 @@ export class SiteDetailComponent implements OnInit {
         console.error('Error deleting entry:', err);
       }
     });
+  }
+
+  onOverviewSave(updated: any) {
+    this.siteForm.set({ ...this.siteForm(), ...updated });
+    this.saveSiteChanges();
   }
 
   // Helper to generate UUID (matching the backend pattern)
